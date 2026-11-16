@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미니 아케이드</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: radial-gradient(ellipse at top, #1b1640 0%, #07060f 70%);
+    color: #eef; font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    display: flex; flex-direction: column; align-items: center; padding: 48px 16px;
+    min-height: 100vh;
+  }
+  h1 { font-size: clamp(32px, 6vw, 56px); margin: 0 0 6px; letter-spacing: 4px;
+       background: linear-gradient(90deg, #5cc8ff, #ff7be5, #ffb36b); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: #99a; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; width: 100%; max-width: 980px; }
+  a.card {
+    position: relative; display: flex; flex-direction: column; text-decoration: none; color: inherit;
+    border-radius: 18px; overflow: hidden; background: #15132a; border: 2px solid transparent;
+    transition: transform .15s, border-color .15s, box-shadow .15s;
+  }
+  a.card:hover, a.card:focus-visible { transform: translateY(-6px); border-color: var(--c); box-shadow: 0 10px 40px -10px var(--c); outline: none; }
+  .art { height: 170px; position: relative; overflow: hidden; }
+  .body { padding: 16px 18px 20px; }
+  .num { position: absolute; top: 10px; left: 12px; font-weight: bold; font-size: 13px; background: #0008; padding: 2px 8px; border-radius: 8px; z-index: 2; }
+  .genre { font-size: 12px; color: var(--c); font-weight: bold; letter-spacing: 1px; }
+  .title { font-size: 22px; font-weight: bold; margin: 4px 0 8px; }
+  .desc { font-size: 14px; color: #aab; line-height: 1.5; min-height: 42px; }
+  .best { margin-top: 12px; font-size: 14px; color: #ffe14d; }
+  .foot { margin-top: 40px; color: #667; font-size: 13px; text-align: center; }
+
+  /* 카드 그림 */
+  .a1 { background: linear-gradient(#0a0d24, #1a2050); }
+  .a1 .star { position: absolute; width: 2px; height: 6px; background: #aac; animation: fall 1.4s linear infinite; }
+  .a1 .plane { position: absolute; left: 50%; bottom: 22px; width: 0; height: 0; transform: translateX(-50%);
+    border-left: 24px solid transparent; border-right: 24px solid transparent; border-bottom: 40px solid #3a7bff; animation: sway 2s ease-in-out infinite; }
+  .a1 .enemy { position: absolute; width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 18px solid #ff5470; }
+  .a1 .shot { position: absolute; left: 50%; width: 3px; height: 12px; background: #9ff; animation: shoot .6s linear infinite; }
+  @keyframes fall { from { transform: translateY(-20px); } to { transform: translateY(190px); } }
+  @keyframes sway { 0%,100% { margin-left: -30px; } 50% { margin-left: 30px; } }
+  @keyframes shoot { from { bottom: 60px; opacity: 1; } to { bottom: 170px; opacity: 0; } }
+
+  .a2 { background: linear-gradient(#1a0630, #07020d); }
+  .a2 .brick { position: absolute; width: 36px; height: 14px; border-radius: 3px; box-shadow: 0 0 8px currentColor; background: currentColor; }
+  .a2 .paddle { position: absolute; bottom: 18px; width: 70px; height: 10px; border-radius: 5px; background: #4dd2ff; box-shadow: 0 0 10px #4dd2ff; animation: pad 2.4s ease-in-out infinite; }
+  .a2 .ball { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px #ff7be5; animation: bounce 2.4s linear infinite; }
+  @keyframes pad { 0%,100% { left: 30%; } 50% { left: 55%; } }
+  @keyframes bounce { 0% { left: 40%; top: 140px; } 25% { left: 75%; top: 70px; } 50% { left: 65%; top: 140px; } 75% { left: 25%; top: 70px; } 100% { left: 40%; top: 140px; } }
+
+  .a3 { background: linear-gradient(#2b1a4a, #c2456b 55%, #f59a5b 85%, #ffd38a); }
+  .a3 .sun { position: absolute; right: 50px; bottom: 50px; width: 70px; height: 70px; border-radius: 50%; background: #ffe9a8; opacity: .9; }
+  .a3 .city { position: absolute; bottom: 30px; left: 0; width: 200%; height: 60px; animation: scroll 6s linear infinite;
+    background: repeating-linear-gradient(90deg, #3d1a3c 0 40px, transparent 40px 46px, #3d1a3c 46px 70px, transparent 70px 80px);
+    clip-path: polygon(0 40%, 10% 40%, 10% 0, 18% 0, 18% 30%, 30% 30%, 30% 10%, 40% 10%, 40% 50%, 50% 50%, 50% 40%, 60% 40%, 60% 0, 68% 0, 68% 30%, 80% 30%, 80% 10%, 90% 10%, 90% 50%, 100% 50%, 100% 100%, 0 100%); }
+  .a3 .ground { position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: #2a1424; border-top: 4px solid #e07a4a; }
+  .a3 .runner { position: absolute; left: 60px; bottom: 30px; width: 16px; height: 30px; background: #3a8dff; border-radius: 8px 8px 2px 2px; animation: hop 1.2s ease-in-out infinite; }
+  .a3 .runner::before { content: ''; position: absolute; top: -12px; left: 1px; width: 14px; height: 14px; border-radius: 50%; background: #ffd9b3; }
+  .a3 .box { position: absolute; bottom: 30px; width: 24px; height: 24px; background: #a8653a; border: 2px solid #6b3a1e; animation: move 1.2s linear infinite; }
+  @keyframes scroll { to { transform: translateX(-50%); } }
+  @keyframes hop { 0%,100% { bottom: 30px; } 35%,55% { bottom: 85px; } }
+  @keyframes move { from { left: 110%; } to { left: -10%; } }
+</style>
+</head>
+<body>
+  <h1>MINI ARCADE</h1>
+  <div class="sub">플레이할 게임을 고르세요 · 숫자키 1 · 2 · 3</div>
+
+  <div class="grid">
+    <a class="card" href="shooter.html" style="--c:#5cc8ff">
+      <div class="art a1" id="art1"><span class="num">1</span><div class="shot"></div><div class="plane"></div></div>
+      <div class="body">
+        <div class="genre">SHOOTING</div>
+        <div class="title">스카이 스트라이커</div>
+        <div class="desc">끝없이 몰려오는 적기와 보스를 격추하는 세로 스크롤 슈팅</div>
+        <div class="best" data-key="skyStrikerBest">최고 기록 —</div>
+      </div>
+    </a>
+
+    <a class="card" href="breakout.html" style="--c:#ff7be5">
+      <div class="art a2" id="art2"><span class="num">2</span><div class="ball"></div><div class="paddle"></div></div>
+      <div class="body">
+        <div class="genre">BRICK BREAKER</div>
+        <div class="title">네온 브레이커</div>
+        <div class="desc">아이템과 콤보로 네온 블록을 부수는 블록깨기</div>
+        <div class="best" data-key="neonBreakerBest">최고 기록 —</div>
+      </div>
+    </a>
+
+    <a class="card" href="runner.html" style="--c:#ffb36b">
+      <div class="art a3"><span class="num">3</span><div class="sun"></div><div class="city"></div><div class="ground"></div><div class="box"></div><div class="runner"></div></div>
+      <div class="body">
+        <div class="genre">RUNNER</div>
+        <div class="title">점프 러너</div>
+        <div class="desc">노을 진 도시를 달리며 점프와 슬라이드로 장애물을 피하는 러너</div>
+        <div class="best" data-key="jumpRunnerBest">최고 기록 —</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="foot">각 게임에서 ESC를 누르면 이 메뉴로 돌아옵니다</div>
+
+<script>
+  // 카드 그림 장식 (별, 적기, 블록)
+  const a1 = document.getElementById('art1');
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('div'); s.className = 'star';
+    s.style.left = Math.random() * 100 + '%'; s.style.animationDelay = -Math.random() * 1.4 + 's';
+    a1.appendChild(s);
+  }
+  [[25, 30], [65, 18], [45, 55]].forEach(([l, t]) => {
+    const e = document.createElement('div'); e.className = 'enemy'; e.style.left = l + '%'; e.style.top = t + 'px'; a1.appendChild(e);
+  });
+  const a2 = document.getElementById('art2');
+  const cols = ['#4dd2ff', '#7dff8a', '#ffe14d', '#ff7be5'];
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 6; c++) {
+    if (Math.random() < 0.15) continue;
+    const b = document.createElement('div'); b.className = 'brick';
+    b.style.color = cols[r]; b.style.left = (8 + c * 15) + '%'; b.style.top = (26 + r * 18) + 'px';
+    a2.appendChild(b);
+  }
+
+  // 최고 기록 표시
+  document.querySelectorAll('.best').forEach(el => {
+    let v = 0;
+    try { v = +localStorage.getItem(el.dataset.key) || 0; } catch (e) {}
+    el.textContent = v ? `🏆 최고 기록 ${v.toLocaleString()}` : '아직 기록 없음';
+  });
+
+  // 숫자키로 바로 시작
+  const links = [...document.querySelectorAll('a.card')];
+  addEventListener('keydown', e => {
+    const n = +e.key;
+    if (n >= 1 && n <= links.length) location.href = links[n - 1].href;
+  });
+</script>
+</body>
+</html>
